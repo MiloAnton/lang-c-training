@@ -1,6 +1,6 @@
 # Langage C : entraînement
 
-[https://miloanton.github.io/lang-c-training/index.htm]Accéde au site ici !
+[https://miloanton.github.io/lang-c-training/index.htm] Accéde au site ici !
 
 Site d'entraînement au langage C de Leonis Formation : 285 exercices en 19 chapitres, compilation et exécution dans le navigateur, vérification automatique de la sortie.
 
