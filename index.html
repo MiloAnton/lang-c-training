@@ -1,0 +1,329 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Entraînement Langage C</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Montserrat:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap"><style>/* Layout : barre haute fine, colonne de lecture unique (~46rem) + sommaire collant à gauche sur grand écran.
+   Les exercices sont des blocs séparés par des filets, seuls le terminal et le code ont un fond. */
+:root {
+  --bg: #f6f8f7;
+  --surface: #ffffff;
+  --ink: #222725;
+  --muted: #5a6562;
+  --line: #dde3e1;
+  --teal: #109391;
+  --teal-ink: #0b6f6d;
+  --teal-soft: #e2f1f0;
+  --on-teal: #ffffff;
+  --yellow: #fff81f;
+  --yellow-ink: #222725;
+  --danger: #b4232f;
+  --ok: #0b6f6d;
+  --term-bg: #1f2422;
+  --term-fg: #e4ebe8;
+  --term-dim: #8f9c97;
+  --tok-kw: #7fd4d1;
+  --tok-type: #fff47a;
+  --tok-str: #f2b880;
+  --tok-num: #f2b880;
+  --tok-com: #7d8a85;
+  --tok-pre: #c5a3f0;
+  --tok-fn: #e4ebe8;
+  --font-display: "Outfit", "Montserrat", system-ui, sans-serif;
+  --font-body: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151918; --surface: #1c2120; --ink: #e6ebe9; --muted: #9aa6a2; --line: #2d3533;
+    --teal: #2bb3b0; --teal-ink: #5fd0cc; --teal-soft: #17302f; --on-teal: #0f1312; --danger: #ff7a85; --ok: #5fd0cc;
+    --term-bg: #0f1312; --term-fg: #e4ebe8; --term-dim: #85928d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151918; --surface: #1c2120; --ink: #e6ebe9; --muted: #9aa6a2; --line: #2d3533;
+  --teal: #2bb3b0; --teal-ink: #5fd0cc; --teal-soft: #17302f; --on-teal: #0f1312; --danger: #ff7a85; --ok: #5fd0cc;
+  --term-bg: #0f1312; --term-fg: #e4ebe8; --term-dim: #85928d;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 1rem; line-height: 1.6;
+}
+a { color: var(--teal-ink); }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: 3px; }
+code, pre { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+code { font-family: var(--font-mono); font-size: .88em; background: var(--teal-soft); padding: .08em .3em; border-radius: 3px; }
+
+/* Barre haute */
+.topbar { background: var(--surface); border-bottom: 1px solid var(--line); }
+@media (min-width: 60rem) { .topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; } }
+@media (max-width: 40rem) {
+  .brand span { display: none; }
+  .topbar nav { margin-left: 0; width: 100%; flex-wrap: nowrap; }
+  .topbar select { flex: 1 1 auto; min-width: 0; }
+  .topbar nav .btn { white-space: nowrap; }
+}
+.topbar-in {
+  max-width: 72rem; margin: 0 auto; padding: .6rem 1rem;
+  display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; color: var(--ink); min-width: 0; }
+.brand img { width: 2rem; height: 2rem; flex: none; }
+.brand b { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; letter-spacing: -.01em; }
+.brand span { color: var(--muted); font-size: .85rem; }
+.topbar nav { margin-left: auto; display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.topbar select, .btn, .unlock input {
+  font: inherit; font-size: .9rem; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: .4rem .6rem;
+}
+.btn { cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; }
+.btn:hover { border-color: var(--teal); }
+.btn-primary { background: var(--teal); border-color: var(--teal); color: var(--on-teal); }
+.btn-primary:hover { filter: brightness(1.08); }
+
+/* En-tête de chapitre */
+.wrap { max-width: 72rem; margin: 0 auto; padding-inline: 1rem; padding-block: 2rem 4rem; }
+.chap-head { display: grid; gap: .6rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--line); }
+.eyebrow { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--teal-ink); }
+.chap-head h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 800; letter-spacing: -.02em;
+  font-size: clamp(2rem, 1.2rem + 3vw, 3.1rem); line-height: 1.05; text-wrap: balance;
+}
+.chap-head h1 .num {
+  display: inline-grid; place-items: center; width: 1.25em; height: 1.25em; margin-right: .3em;
+  background: var(--yellow); color: var(--yellow-ink); border-radius: 50%; font-size: .8em; vertical-align: .08em;
+}
+.chap-intro { color: var(--muted); max-width: 46rem; margin: 0; }
+
+/* Bandeau de déverrouillage */
+.unlock {
+  margin-top: 1.5rem; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+}
+.unlock form {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: .8rem .9rem;
+  display: grid; gap: .5rem;
+}
+.unlock .row { display: flex; gap: .5rem; flex-wrap: wrap; }
+.unlock label { font-weight: 700; font-size: .9rem; display: flex; align-items: center; gap: .45rem; }
+.unlock input { flex: 1 1 8rem; min-width: 0; text-transform: uppercase; letter-spacing: .06em; font-family: var(--font-mono); }
+.unlock .msg { font-size: .82rem; color: var(--muted); margin: 0; min-height: 1.2em; }
+.unlock .msg.err { color: var(--danger); }
+.unlock form.done { border-color: var(--teal); background: var(--teal-soft); }
+.unlock form.done .msg { color: var(--ok); font-weight: 600; }
+.lock-ico { width: 1rem; height: 1rem; flex: none; }
+
+/* Corps : sommaire + exercices */
+.layout { display: grid; gap: 2.5rem; margin-top: 2rem; }
+@media (min-width: 60rem) { .layout { grid-template-columns: 13rem minmax(0, 1fr); } }
+.toc { display: none; }
+@media (min-width: 60rem) {
+  .toc { display: block; position: sticky; top: 5rem; align-self: start; font-size: .88rem; }
+  .toc h2 { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 1.2rem 0 .3rem; }
+  .toc h2:first-child { margin-top: 0; }
+  .toc ol { list-style: none; padding: 0; margin: 0; display: grid; gap: .1rem; }
+  .toc a { display: block; padding: .2rem .5rem; border-radius: 5px; color: var(--ink); text-decoration: none; line-height: 1.35; }
+  .toc a:hover { background: var(--teal-soft); }
+}
+.levels-mobile { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1.25rem; }
+@media (min-width: 60rem) { .levels-mobile { display: none; } }
+
+.level { display: grid; gap: 0; }
+.level + .level { margin-top: 3rem; }
+.level-title {
+  font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; margin: 0 0 .25rem;
+  display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap;
+}
+.level-title small { font-family: var(--font-body); font-size: .85rem; font-weight: 500; color: var(--muted); }
+
+.ex { padding-block: 1.75rem; border-top: 1px solid var(--line); display: grid; gap: .9rem; min-width: 0; }
+.ex-head { display: flex; align-items: baseline; gap: .7rem; flex-wrap: wrap; }
+.tag {
+  font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: .15rem .5rem; border-radius: 4px; background: var(--teal-soft); color: var(--teal-ink); white-space: nowrap;
+}
+.tag.boss { background: var(--yellow); color: var(--yellow-ink); }
+.ex h3 { margin: 0; font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; line-height: 1.25; text-wrap: balance; }
+.enonce { max-width: 46rem; display: grid; gap: .7rem; min-width: 0; }
+.enonce p { margin: 0; }
+
+/* Terminal : exemple d'exécution */
+.term { min-width: 0; }
+.term-label { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .3rem; }
+pre.terminal, .code pre {
+  margin: 0; background: var(--term-bg); color: var(--term-fg); border-radius: 8px;
+  padding: .9rem 1rem; overflow-x: auto; font-family: var(--font-mono); font-size: .82rem; line-height: 1.5;
+  tab-size: 4;
+}
+pre.terminal code, .code pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+pre.terminal::before { content: "$ ./a.out"; display: block; color: var(--term-dim); margin-bottom: .4rem; }
+
+/* Indices et correction */
+.tools { display: grid; gap: .6rem; max-width: 46rem; }
+.panel { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.panel-head {
+  display: flex; align-items: center; gap: .6rem; padding: .55rem .8rem; flex-wrap: wrap;
+  font-weight: 600; font-size: .92rem;
+}
+.panel-head .state { color: var(--muted); font-weight: 500; font-size: .84rem; }
+.panel-head .btn { margin-left: auto; padding: .3rem .65rem; font-size: .84rem; }
+.panel.locked .panel-head { color: var(--muted); }
+.panel:not(.locked) .lock-ico { display: none; }
+.panel-body { border-top: 1px solid var(--line); padding: .8rem; display: grid; gap: .7rem; }
+.hint { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .6rem; align-items: start; }
+.hint b {
+  font-family: var(--font-display); font-size: .8rem; background: var(--teal); color: var(--on-teal);
+  border-radius: 50%; width: 1.5rem; height: 1.5rem; display: grid; place-items: center;
+}
+.hint p { margin: 0; }
+.code { min-width: 0; display: grid; gap: .35rem; }
+.code-bar { display: flex; align-items: center; gap: .5rem; }
+.code-bar .file { font-family: var(--font-mono); font-size: .8rem; font-weight: 600; color: var(--muted); }
+.code-bar .btn { margin-left: auto; padding: .2rem .55rem; font-size: .78rem; }
+.corr-note { margin: 0; font-size: .9rem; color: var(--muted); }
+
+/* Coloration du C */
+.k { color: var(--tok-kw); }
+.kt { color: var(--tok-type); }
+.s, .sc, .se { color: var(--tok-str); }
+.m { color: var(--tok-num); }
+.c { color: var(--tok-com); font-style: italic; }
+.p { color: var(--tok-pre); }
+
+/* Règles de présentation */
+.rules { margin-top: 1rem; max-width: 46rem; font-size: .92rem; }
+.rules summary { cursor: pointer; font-weight: 600; color: var(--teal-ink); }
+.rules ul { margin: .5rem 0 0; padding-left: 1.2rem; color: var(--muted); }
+
+.chap-nav { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+.chap-nav .disabled { color: var(--muted); }
+footer.site { color: var(--muted); font-size: .8rem; text-align: center; padding-block: 1.5rem 2.5rem; padding-inline: 1rem; }
+
+/* Éditeur de l'étudiant */
+.editor { max-width: 46rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); min-width: 0; }
+.editor-head { display: flex; align-items: center; gap: .6rem; padding: .55rem .8rem; flex-wrap: wrap; font-weight: 600; font-size: .92rem; }
+.editor-head .state { color: var(--muted); font-weight: 500; font-size: .84rem; }
+.editor-head .btn { margin-left: auto; padding: .3rem .65rem; font-size: .84rem; }
+.editor-body { border-top: 1px solid var(--line); padding: .6rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; min-width: 0; }
+.editor-body > * { min-width: 0; }
+.editor-tools { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+.editor-tools .btn { padding: .25rem .6rem; font-size: .8rem; }
+.editor-tools .saved { margin-left: auto; font-size: .78rem; color: var(--muted); }
+.editor .CodeMirror {
+  height: auto; min-height: 14rem; border-radius: 6px; background: var(--term-bg); color: var(--term-fg);
+  font-family: var(--font-mono); font-size: .84rem; line-height: 1.5; font-variant-ligatures: none;
+}
+.editor .CodeMirror-scroll { min-height: 14rem; }
+.editor .CodeMirror-gutters { background: var(--term-bg); border-right: 1px solid var(--line); }
+.editor .CodeMirror-linenumber { color: var(--term-dim); }
+.editor .CodeMirror-cursor { border-left: 2px solid var(--yellow); }
+.editor .CodeMirror-selected, .editor .CodeMirror-focused .CodeMirror-selected { background: rgba(16, 147, 145, .45); }
+.editor .CodeMirror-line::selection, .editor .CodeMirror-line > span::selection, .editor .CodeMirror-line > span > span::selection { background: rgba(16, 147, 145, .45); }
+.editor .CodeMirror-matchingbracket { color: var(--yellow) !important; text-decoration: underline; }
+.editor .CodeMirror-focused { outline: 2px solid var(--teal); outline-offset: 1px; }
+.editor .cm-keyword { color: var(--tok-kw); }
+.editor .cm-type, .editor .cm-variable-3 { color: var(--tok-type); }
+.editor .cm-string, .editor .cm-string-2 { color: var(--tok-str); }
+.editor .cm-number, .editor .cm-atom { color: var(--tok-num); }
+.editor .cm-comment { color: var(--tok-com); font-style: italic; }
+.editor .cm-meta { color: var(--tok-pre); }
+.editor .cm-variable, .editor .cm-def, .editor .cm-property, .editor .cm-operator, .editor .cm-punctuation { color: var(--term-fg); }
+.editor-tools .toggle { display: inline-flex; align-items: center; gap: .35rem; font-size: .8rem; font-weight: 600; cursor: pointer; padding-inline: .2rem; }
+.editor-tools .toggle input { accent-color: var(--teal); width: 1rem; height: 1rem; margin: 0; }
+.CodeMirror-hints {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 3px;
+  font-family: var(--font-mono); font-size: .82rem; box-shadow: 0 6px 18px rgba(0, 0, 0, .18); z-index: 50;
+}
+.CodeMirror-hint { color: var(--ink); padding: .15rem .5rem; border-radius: 4px; }
+li.CodeMirror-hint-active { background: var(--teal); color: var(--on-teal); }
+
+/* Exécution */
+.run { display: grid; gap: .4rem; min-width: 0; }
+.run-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.run-state { font-size: .82rem; font-weight: 600; color: var(--muted); }
+.run-state.ok { color: var(--ok); }
+.run-state.bad { color: var(--danger); }
+.run-state.wait { color: var(--teal-ink); }
+.run-head .eof { margin-left: auto; padding: .2rem .55rem; font-size: .78rem; }
+pre.console {
+  margin: 0; background: var(--term-bg); color: var(--term-fg); border-radius: 6px; padding: .8rem 1rem;
+  font-family: var(--font-mono); font-size: .82rem; line-height: 1.5; overflow-x: auto; max-height: 28rem; overflow-y: auto;
+  font-variant-ligatures: none; white-space: pre;
+}
+pre.console code { background: none; padding: 0; font-size: inherit; color: inherit; }
+pre.console .typed { color: var(--yellow); }
+pre.console .stderr, pre.console .d-err { color: #ff8a8a; }
+pre.console .d-warn { color: #ffd479; }
+pre.console .d-note { color: var(--term-dim); }
+pre.console .stdin {
+  font: inherit; color: var(--yellow); background: transparent; border: 0; border-bottom: 1px dashed var(--term-dim);
+  outline: none; padding: 0; min-width: 6ch; width: 16ch; caret-color: var(--yellow);
+}
+pre.console .stdin:focus { border-bottom-color: var(--yellow); }
+.editor .cm-err-line { background: rgba(255, 90, 90, .18); }
+.run-files { display: grid; gap: .3rem; }
+.run-files details { font-size: .84rem; }
+.run-files summary { cursor: pointer; color: var(--muted); }
+.run-files pre { margin: .3rem 0 0; background: var(--teal-soft); padding: .5rem .7rem; border-radius: 6px; overflow-x: auto; font-family: var(--font-mono); font-size: .8rem; }
+
+/* Bandeaux d'information */
+.notice {
+  margin: 0; max-width: 46rem; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .6rem; align-items: start;
+  background: var(--teal-soft); color: var(--ink); border-radius: 8px; padding: .7rem .9rem; font-size: .9rem; line-height: 1.5;
+}
+.chap-head .notice { margin-top: 1rem; }
+.info-ico { width: 1.1rem; height: 1.1rem; color: var(--teal-ink); margin-top: .15rem; }
+
+/* Vérification */
+.verif { border: 1px solid var(--line); border-radius: 6px; padding: .7rem .8rem; display: grid; gap: .45rem; font-size: .9rem; min-width: 0; }
+.verif.ok { border-color: var(--teal); background: var(--teal-soft); }
+.verif.bad { border-color: var(--danger); }
+.verif p { margin: 0; }
+.v-titre { font-weight: 700; font-family: var(--font-display); font-size: 1rem; }
+.verif.ok .v-titre { color: var(--ok); }
+.verif.bad .v-titre { color: var(--danger); }
+.v-ok { color: var(--ok); font-weight: 600; }
+.v-bad { color: var(--danger); font-weight: 600; }
+.v-note { color: var(--muted); font-size: .84rem; }
+.v-diff { display: grid; gap: .5rem; min-width: 0; }
+.v-ligne { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .15rem .6rem; align-items: baseline; padding: .4rem .5rem; background: var(--bg); border-radius: 5px; }
+.v-num { grid-column: 1 / -1; font-size: .75rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.v-lab { font-size: .75rem; color: var(--muted); }
+.v-ligne code, .v-bloc pre { font-family: var(--font-mono); font-size: .8rem; white-space: pre; overflow-x: auto; background: none; padding: 0; display: block; }
+.v-att { color: var(--ok); }
+.v-obt { color: var(--danger); }
+.v-bloc pre { margin: 0; background: var(--bg); padding: .5rem .6rem; border-radius: 5px; }
+.verif .sp { opacity: .45; }
+.verif .vide { font-style: italic; opacity: .7; font-family: var(--font-body); }
+
+.v-bloc .ko { color: var(--danger); font-weight: 600; }
+.v-bloc .okl { opacity: .55; }
+.v-bloc .att-ko { color: var(--ok); font-weight: 600; }
+.bandeau { margin: .75rem 0 0; max-width: 46rem; padding: .7rem .9rem; border-radius: 8px; background: var(--yellow); color: var(--yellow-ink); font-size: .92rem; }
+
+/* Accueil */
+.home { display: grid; gap: 2.5rem; }
+.hero { display: grid; gap: .7rem; padding-bottom: 2rem; border-bottom: 1px solid var(--line); }
+.hero h1 { margin: 0; font-family: var(--font-display); font-weight: 800; letter-spacing: -.02em; font-size: clamp(2.1rem, 1.3rem + 3.2vw, 3.4rem); line-height: 1.05; text-wrap: balance; max-width: 22ch; }
+.lead { margin: 0; font-size: 1.08rem; color: var(--muted); max-width: 46rem; }
+.home h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; margin: 0 0 1rem; }
+.howto ol { margin: 0 0 1rem; padding-left: 1.3rem; display: grid; gap: .5rem; max-width: 46rem; }
+.chap-grid { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+.chap-card {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .8rem; align-items: start; text-decoration: none; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: .9rem 1rem;
+}
+.chap-card:hover { border-color: var(--teal); }
+.chap-card .num {
+  display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--yellow); color: var(--yellow-ink);
+  font-family: var(--font-display); font-weight: 800; font-size: 1.05rem;
+}
+.cc-txt { display: grid; gap: .1rem; min-width: 0; }
+.cc-txt b { font-family: var(--font-display); font-size: 1.08rem; line-height: 1.25; }
+.cc-level { font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--teal-ink); }
+.cc-meta { font-size: .82rem; color: var(--muted); }
+pre.terminal.has-cmd::before { content: none; }
+</style>
+</head><body><header class="topbar"><div class="topbar-in"><a class="brand" href="index.html"><img src="data:image/png;base64,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" alt="Leonis"><b>Langage C</b><span>Entraînement</span></a></div></header><main class="wrap home"><div class="hero"><div class="eyebrow">Leonis Formation · cours « Le Langage C »</div><h1>Entraîne-toi au C, du binaire aux threads</h1><p class="lead">285 exercices en 19 chapitres, en trois niveaux : échauffement, intermédiaire et BOSS. Tu écris ton code, tu l'exécutes et tu le vérifies directement dans ton navigateur, sans rien installer.</p></div><section class="howto"><h2>Comment ça marche</h2><ol><li><b>Lis l'énoncé</b> et l'exemple d'exécution : ton programme doit afficher la même chose, présentation comprise.</li><li><b>Écris ta solution</b> dans la zone de code de l'exercice, puis clique sur Exécuter (ou Ctrl+Entrée). Le programme te demande tes saisies comme dans un vrai terminal.</li><li><b>Vérifie</b> : le bouton « Vérifier mon programme » relance ton code avec les saisies de l'exemple et te montre les lignes qui diffèrent.</li><li><b>Bloqué ?</b> Les indices puis la correction se débloquent avec le code donné en séance.</li></ol><p class="v-note">La première exécution télécharge le compilateur (environ 27 Mo), une seule fois : il reste ensuite en mémoire dans ton navigateur. Ton code est enregistré automatiquement sur cet appareil.</p></section><section class="chapters"><h2>Les chapitres</h2><div class="chap-grid"><a class="chap-card" href="chapitre-01.html"><span class="num">1</span><span class="cc-txt"><span class="cc-level">Level 3</span><b>Binaire, hexadécimal et ASCII</b><span class="cc-meta">15 exercices · 10 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-02.html"><span class="num">2</span><span class="cc-txt"><span class="cc-level">Levels 4 et 7</span><b>Entrées, sorties et mémoire</b><span class="cc-meta">15 exercices · 12 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-03.html"><span class="num">3</span><span class="cc-txt"><span class="cc-level">Level 5</span><b>Les types numériques</b><span class="cc-meta">15 exercices · 4 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-04.html"><span class="num">4</span><span class="cc-txt"><span class="cc-level">Level 6</span><b>Les opérateurs</b><span class="cc-meta">15 exercices · 13 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-05.html"><span class="num">5</span><span class="cc-txt"><span class="cc-level">Level 8</span><b>L&#x27;exécution conditionnelle</b><span class="cc-meta">15 exercices · 15 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-06.html"><span class="num">6</span><span class="cc-txt"><span class="cc-level">Level 9</span><b>Les boucles</b><span class="cc-meta">15 exercices · 12 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-07.html"><span class="num">7</span><span class="cc-txt"><span class="cc-level">Level 10</span><b>Les tableaux et les chaînes</b><span class="cc-meta">15 exercices · 15 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-08.html"><span class="num">8</span><span class="cc-txt"><span class="cc-level">Level 11</span><b>Les fonctions</b><span class="cc-meta">15 exercices · 11 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-09.html"><span class="num">9</span><span class="cc-txt"><span class="cc-level">Level 11.2</span><b>La récursivité</b><span class="cc-meta">15 exercices · 13 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-10.html"><span class="num">10</span><span class="cc-txt"><span class="cc-level">Level 12</span><b>Les pointeurs</b><span class="cc-meta">15 exercices · 10 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-11.html"><span class="num">11</span><span class="cc-txt"><span class="cc-level">Level 12.2</span><b>sizeof, typedef et le pointeur fantôme</b><span class="cc-meta">15 exercices · 8 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-12.html"><span class="num">12</span><span class="cc-txt"><span class="cc-level">Level 13</span><b>Les structures</b><span class="cc-meta">15 exercices · 14 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-13.html"><span class="num">13</span><span class="cc-txt"><span class="cc-level">Level 14</span><b>L&#x27;allocation dynamique</b><span class="cc-meta">15 exercices · 13 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-14.html"><span class="num">14</span><span class="cc-txt"><span class="cc-level">Level 15</span><b>Les fichiers</b><span class="cc-meta">15 exercices · 13 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-15.html"><span class="num">15</span><span class="cc-txt"><span class="cc-level">Level 16</span><b>Bibliothèques et modularité (.h / .c)</b><span class="cc-meta">15 exercices</span></span></a><a class="chap-card" href="chapitre-16.html"><span class="num">16</span><span class="cc-txt"><span class="cc-level">Level 17</span><b>En-têtes et macros</b><span class="cc-meta">15 exercices · 5 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-17.html"><span class="num">17</span><span class="cc-txt"><span class="cc-level">Level 18</span><b>Le multithreading</b><span class="cc-meta">15 exercices</span></span></a><a class="chap-card" href="chapitre-18.html"><span class="num">18</span><span class="cc-txt"><span class="cc-level">Level 19</span><b>Pointeurs avancés et structures dynamiques</b><span class="cc-meta">15 exercices · 10 vérifiables en ligne</span></span></a><a class="chap-card" href="chapitre-19.html"><span class="num">19</span><span class="cc-txt"><span class="cc-level">Level 20</span><b>La mémoire bas niveau</b><span class="cc-meta">15 exercices · 4 vérifiables en ligne</span></span></a></div></section><details class="rules"><summary>Règles de présentation exigées sur tous les exercices</summary><ul><li>un titre de programme encadré ou souligné au lancement ;</li><li>des invites de saisie qui disent ce qui est attendu (unité, bornes, format) ;</li><li>une ligne vide entre la saisie et les résultats ;</li><li>des résultats alignés, avec leurs unités, et 2 décimales pour tout montant ;</li><li>des messages d'erreur explicites qui disent ce qui ne va pas et ce qu'il faut faire ;</li><li>aucun texte collé au prompt du terminal en fin de programme.</li></ul></details></main><footer class="site">Leonis Formation · Banque d'exercices du cours « Le Langage C »</footer></body></html>
